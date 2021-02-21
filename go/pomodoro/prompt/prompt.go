@@ -2,11 +2,8 @@ package prompt
 
 import "fmt"
 
-func WelcomeMessage() (str string, err error) {
-	return fmt.Sprintln("Welcome to Pomodoro!"), nil
-}
-
-func MessageUser(input string) (str string, err error) {
-	fmt.Println(input)
-	return fmt.Sprintln(input), nil
+// MessageUser the input and changes input to the next message
+func MessageUser(input *string, nextMessage string) {
+	fmt.Println(*input)
+	*input = nextMessage
 }

@@ -2,18 +2,18 @@ package reader
 
 import (
 	"bufio"
-	"fmt"
 	"os"
 	"pomodoro/prompt"
+	"strings"
 )
 
-func UserInput(message *string) (result string, err error) {
-	prompt.MessageUser(*message)
+// UserInput prompts the user, gets an input and changes currentMessage
+func UserInput(message *string, newPrompt string) (result string, err error) {
+	prompt.MessageUser(message, newPrompt)
 	reader := bufio.NewReader((os.Stdin))
 	text, _ := reader.ReadString('\n')
 	if text == "" {
 		return "", err
 	}
-	*message = "I DID CHANGE!"
-	return fmt.Sprint(text), nil
+	return strings.TrimSuffix(text, "\n"), nil
 }
