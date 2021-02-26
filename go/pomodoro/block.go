@@ -1,7 +1,10 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
+	"os"
+	"strings"
 	"time"
 )
 
@@ -19,10 +22,20 @@ func (b *Block) Run() (active bool, err error) {
 		fmt.Printf("\033[2K\r %d", timer)
 		time.Sleep(1 * time.Second)
 	}
-	fmt.Println("\nGOOOOO")
 	b.State = "working"
 	for true {
-
+		var text string
+		if b.State == "working" {
+			fmt.Printf("\033[2K\r What should we work on this block ? \n")
+			reader := bufio.NewReader((os.Stdin))
+			text, _ = reader.ReadString('\n')
+			if text == "" {
+				return false, err
+			}
+			// should log here the string
+			writeTaskLog(strings.TrimSuffix(text, "\n"))
+			fmt.Printf("let's start with %#v block \n", strings.TrimSuffix(text, "\n"))
+		}
 		b.Current = 0
 		var upperTimer int
 		switch b.State {
