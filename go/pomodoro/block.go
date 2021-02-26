@@ -7,6 +7,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/0xAX/notificator"
 )
 
 // Block is the timing block for our pomodoro machine
@@ -29,6 +31,25 @@ func (b Block) AskTimings() (workTime int, breakTime int, err error) {
 	breakTime, err = strconv.Atoi(strings.TrimSuffix(tempBreakTime, "\n"))
 	fmt.Printf("Cool, let's set a break after your session of %v minutes \n", breakTime)
 	return
+}
+
+// ChunkFinishAnnouncements notifies the user at the end of blocks and changes the state
+func (b Block) ChunkFinishAnnouncements() {
+	var notify *notificator.Notificator
+
+	notify = notificator.New(notificator.Options{
+		DefaultIcon: "assets/sliced_tomato.png",
+		AppName:     "Pomodoro CLI",
+	})
+	if b.State == "working" {
+		b.State = "breaking"
+		notify.Push("Work is over", "Time to do a productive break", "assets/sliced_tomato.png", "Pomodoro CLI")
+		fmt.Printf("\nYou are done buddy, break time! :)\n")
+	} else {
+		b.State = "working"
+		notify.Push("Break is over", "Time to start a new Work Block!", "assets/tomato.png", "Pomodoro CLI")
+		fmt.Printf("\nGood job! \n")
+	}
 }
 
 // Run runs the block of work and pause alternativelly.
@@ -70,13 +91,6 @@ func (b *Block) Run() (active bool, err error) {
 		fmt.Printf("\033[2K\r%d minutes remaining", upperTimer-b.Current)
 	}
 
-	if b.State == "working" {
-		b.State = "breaking"
-		fmt.Printf("\nYou are done buddy, break time! :)\n")
-	} else {
-		b.State = "working"
-		fmt.Printf("\nGood job! \n")
-
-	}
+	b.ChunkFinishAnnouncements()
 	return true, nil
 }

@@ -10,8 +10,9 @@ import (
 func menuPrompt() (action string) {
 
 	fmt.Println("What would you like to do ?")
-	fmt.Println("[l] list the tasks I have done")
 	fmt.Println("[n] new work block")
+	fmt.Println("[l] list the tasks I have done")
+	fmt.Println("[c] clear my list of tasks")
 	fmt.Println("[s] stop")
 	reader := bufio.NewReader((os.Stdin))
 	action, _ = reader.ReadString('\n')
@@ -39,6 +40,8 @@ func main() {
 			run, err = block.Run()
 		case "l":
 			readTaskLog()
+		case "c":
+			clearTaskLog()
 		default:
 			fmt.Println("I do not know this command. Please try again")
 		}

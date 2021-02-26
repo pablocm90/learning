@@ -39,3 +39,13 @@ func readTaskLog() (taskLog bool) {
 	fmt.Println("You have no tasks yet, good excuse to start working :D")
 	return
 }
+
+func clearTaskLog() {
+	if _, err := os.Stat("log/task_log.txt"); err == nil {
+		f, err := os.Create("log/task_log.txt")
+		check(err)
+		defer f.Close()
+
+		f.WriteString("")
+	}
+}
