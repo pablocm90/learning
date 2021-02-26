@@ -34,7 +34,7 @@ func (b Block) AskTimings() (workTime int, breakTime int, err error) {
 }
 
 // ChunkFinishAnnouncements notifies the user at the end of blocks and changes the state
-func (b Block) ChunkFinishAnnouncements() {
+func (b *Block) ChunkFinishAnnouncements() {
 	var notify *notificator.Notificator
 
 	notify = notificator.New(notificator.Options{
@@ -86,7 +86,7 @@ func (b *Block) Run() (active bool, err error) {
 	}
 
 	for b.Current < upperTimer {
-		time.Sleep(1 * time.Second)
+		time.Sleep(1 * time.Minute)
 		b.Current++
 		fmt.Printf("\033[2K\r%d minutes remaining", upperTimer-b.Current)
 	}
