@@ -1,41 +1,49 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
-	"pomodoro/prompt"
-	"pomodoro/reader"
-	"strconv"
+	"os"
+	"strings"
 )
 
-func main() {
-	currentMessage := "Welcome to pomodoro"
-	prompt.MessageUser(&currentMessage, "How long should the session be ? ")
+func menuPrompt() (action string) {
 
+	fmt.Println("What would you like to do ?")
+	fmt.Println("[l] list the tasks I have done")
+	fmt.Println("[n] new work block")
+	fmt.Println("[s] stop")
+	reader := bufio.NewReader((os.Stdin))
+	action, _ = reader.ReadString('\n')
+	action = strings.TrimSuffix(action, "\n")
+	return
+}
+
+func main() {
+	fmt.Println("Welcome to pomodoro")
 	run := true
+	block := &Block{
+		State: "working",
+	}
 
 	for run {
-		workTime, _ := reader.UserInput(&currentMessage, "What about breaktime ?")
-		fmt.Println("Cool, let's set a work session to", workTime)
-		breakTime, _ := reader.UserInput(&currentMessage, "All Set! ")
-		fmt.Println("Cool, let's set a break session to", breakTime)
-		prompt.MessageUser(&currentMessage, "")
-
-		workTimeConverted, _ := strconv.Atoi(workTime)
-		breakTimeConverted, _ := strconv.Atoi(breakTime)
-		blockState := "idle"
-		current := 0
-		block := &Block{
-			WorkTime:  workTimeConverted,
-			BreakTime: breakTimeConverted,
-			State:     blockState,
-			Current:   current,
-		}
-
 		var err error
-		run, err = block.Run()
-
+		if block.State == "breaking" {
+			block.Run()
+		}
+		action := menuPrompt()
+		switch action {
+		case "s":
+			run = false
+		case "n":
+			run, err = block.Run()
+		case "l":
+			readTaskLog()
+		default:
+			fmt.Println("I do not know this command. Please try again")
+		}
 		if err != nil {
-			panic("I panic!")
+			panic(err)
 		}
 	}
 }

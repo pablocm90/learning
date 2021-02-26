@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -15,53 +16,67 @@ type Block struct {
 	Current             int
 }
 
+// AskTimings for the block to be executed next
+func (b Block) AskTimings() (workTime int, breakTime int, err error) {
+	reader := bufio.NewReader((os.Stdin))
+
+	fmt.Println("How long should the work time be for this block?")
+	tempWorkTime, _ := reader.ReadString('\n')
+	workTime, err = strconv.Atoi(strings.TrimSuffix(tempWorkTime, "\n"))
+	fmt.Printf("Cool, let's set a work session to %v minutes \n", workTime)
+	fmt.Println("How long should the break time be for this block?")
+	tempBreakTime, _ := reader.ReadString('\n')
+	breakTime, err = strconv.Atoi(strings.TrimSuffix(tempBreakTime, "\n"))
+	fmt.Printf("Cool, let's set a break after your session of %v minutes \n", breakTime)
+	return
+}
+
 // Run runs the block of work and pause alternativelly.
 func (b *Block) Run() (active bool, err error) {
-	fmt.Println("Starting Work...")
-	for timer := 3; timer > 0; timer-- {
-		fmt.Printf("\033[2K\r %d", timer)
-		time.Sleep(1 * time.Second)
-	}
-	b.State = "working"
-	for true {
-		var text string
-		if b.State == "working" {
-			fmt.Printf("\033[2K\r What should we work on this block ? \n")
-			reader := bufio.NewReader((os.Stdin))
-			text, _ = reader.ReadString('\n')
-			if text == "" {
-				return false, err
-			}
-			// should log here the string
-			writeTaskLog(strings.TrimSuffix(text, "\n"))
-			fmt.Printf("let's start with %#v block \n", strings.TrimSuffix(text, "\n"))
-		}
+	var text string
+	if b.State == "working" {
+		b.WorkTime, b.BreakTime, err = b.AskTimings()
 		b.Current = 0
-		var upperTimer int
-		switch b.State {
-		case "working":
-			upperTimer = b.WorkTime
-		case "breaking":
-			upperTimer = b.BreakTime
-		default:
-			fmt.Println("I am in default")
-			return false, nil
+		fmt.Printf("\033[2K\rWhat should we work on this block ? \n")
+		reader := bufio.NewReader((os.Stdin))
+		text, _ = reader.ReadString('\n')
+		if text == "" {
+			return false, err
 		}
-
-		for b.Current < upperTimer {
-			time.Sleep(1 * time.Minute)
-			b.Current++
-			fmt.Printf("\033[2K\r %d minutes remaining", upperTimer-b.Current)
+		// should log here the string
+		writeTaskLog(strings.TrimSuffix(text, "\n"))
+		fmt.Println("Starting in :")
+		for timer := 3; timer > 0; timer-- {
+			fmt.Printf("\033[2K\r %d", timer)
+			time.Sleep(1 * time.Second)
 		}
-
-		if b.State == "working" {
-			b.State = "breaking"
-		} else {
-			b.State = "working"
-		}
-
-		fmt.Printf("\nYou are done buddy, %#v time! :)\n", b.State)
+		fmt.Printf("\033[2K\rlet's start working on: '%v' \n", strings.TrimSuffix(text, "\n"))
 	}
 
-	return false, nil
+	b.Current = 0
+	var upperTimer int
+	switch b.State {
+	case "working":
+		upperTimer = b.WorkTime
+	case "breaking":
+		upperTimer = b.BreakTime
+	default:
+		return false, nil
+	}
+
+	for b.Current < upperTimer {
+		time.Sleep(1 * time.Second)
+		b.Current++
+		fmt.Printf("\033[2K\r%d minutes remaining", upperTimer-b.Current)
+	}
+
+	if b.State == "working" {
+		b.State = "breaking"
+		fmt.Printf("\nYou are done buddy, break time! :)\n")
+	} else {
+		b.State = "working"
+		fmt.Printf("\nGood job! \n")
+
+	}
+	return true, nil
 }
