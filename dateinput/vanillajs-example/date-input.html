@@ -1,0 +1,162 @@
+<!DOCTYPE html >
+<head>
+  <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+  <meta content="utf-8" http-equiv="encoding">
+</head>
+<body>
+  <div>
+    <label for="date[day]"> Day Label </label>
+    <input
+      inputmode="numeric"
+      id="day"
+      name="date[day]"
+      max="31"
+      min='0'
+      pattern="[0-9]*"
+      placeholder="day placeholder"
+      type='number'
+      />
+      <label for="date[month]"> Month Label </label>
+      <input
+      inputmode="numeric"
+      id="month"
+      max='12'
+      min='0'
+      name="date[month]"
+      pattern="[0-9]*"
+      placeholder="month placeholder"
+      type='number'
+      />
+      <label for="date[year]"> Year Label </label>
+      <input
+      name="date[year]"
+      id="year"
+      inputmode="numeric"
+      pattern="[0-9]*"
+      placeholder="year placeholder"
+      type='number'
+    />
+  </div>
+</body>
+<script type="text/javascript">
+
+  const handleArrowUp = (id, min, max) => {
+    const element = document.getElementById(id)
+    if (element.value === '31') {
+      element.value = '00'
+    }
+    element.value = formatValue(parseInt(element.value) + 1)
+  }
+
+  const handleArrowDown = (id, min, max) => {
+    const element = document.getElementById(id)
+    if (element.value === '01' || element.value === '1') {
+      element.value = '32'
+    }
+    element.value = formatValue(parseInt(element.value) - 1)
+
+  }
+
+  const formatValue = (value, digits = 2) => {
+    const stringValue = value.toString();
+    const difference = stringValue.length - digits;
+
+    if (difference > 0) return stringValue.slice(difference);
+
+    return stringValue.padStart(digits, '0');
+  }
+
+  const handleNumberInput = (number, id, min, max) => {
+    const element = document.getElementById(id)
+    let formattedValue = formatValue(parseInt(element.value + number), id === 'year' ? 4 : 2)
+    element.value = marginBound(formattedValue, min, max)
+    if (id === 'day' && element.value > 3 || id === 'month' && element.value > 1) nextElement(id).focus();
+  }
+
+  const nextElement = (id) => {
+    switch (id) {
+      case 'day':
+        return document.getElementById('month');
+      case 'month':
+        return document.getElementById('year');
+      default:
+        return false;
+    }
+  }
+
+  const marginBound = (value, lowerBound, upperBound) => {
+    if (parseInt(value).toString().length < upperBound.toString().length) return value;
+    if (parseInt(value) > upperBound) return upperBound;
+    if (parseInt(value) < lowerBound) return lowerBound;
+
+    return value;
+  }
+
+  const clear = (id) => {
+    const element = document.getElementById(id)
+    element.value = ''
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('day').addEventListener('keydown', (keyEvent) => {
+      switch (keyEvent.key) {
+        case 'ArrowUp':
+          keyEvent.preventDefault();
+          handleArrowUp('day', '01', '31');
+          break;
+          case 'ArrowDown':
+          keyEvent.preventDefault();
+          handleArrowDown('day', '01', '31')
+          break;
+        default:
+          keyEvent.preventDefault();
+          if (isFinite(keyEvent.key)) {
+            handleNumberInput(keyEvent.key, 'day', 1, 31)
+          } else if (keyEvent.key === 'Backspace') {
+            clear('day')
+          }
+          break;
+      };
+    });
+    document.getElementById('month').addEventListener('keydown', (keyEvent) => {
+      switch (keyEvent.key) {
+        case 'ArrowUp':
+          keyEvent.preventDefault();
+          handleArrowUp('month', '01', '12');
+          break;
+          case 'ArrowDown':
+          keyEvent.preventDefault();
+          handleArrowDown('month', '01', '12')
+          break;
+        default:
+          keyEvent.preventDefault();
+          if (isFinite(keyEvent.key)) {
+            handleNumberInput(keyEvent.key, 'month', 1, 12)
+          } else if (keyEvent.key === 'Backspace') {
+            clear('month')
+          }
+          break;
+      };
+    });
+    document.getElementById('year').addEventListener('keydown', (keyEvent) => {
+      switch (keyEvent.key) {
+        case 'ArrowUp':
+          keyEvent.preventDefault();
+          handleArrowUp('year', '1900', '2100');
+          break;
+          case 'ArrowDown':
+          keyEvent.preventDefault();
+          handleArrowDown('year', '1900 ', '2100')
+          break;
+        default:
+          keyEvent.preventDefault();
+          if (isFinite(keyEvent.key)) {
+            handleNumberInput(keyEvent.key, 'year', 0000, 9999)
+          } else if (keyEvent.key === 'Backspace') {
+            clear('year')
+          }
+          break;
+      }
+    })
+  })
+</script>

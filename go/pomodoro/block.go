@@ -86,7 +86,7 @@ func (b *Block) Run() (active bool, err error) {
 	}
 
 	for b.Current < upperTimer {
-		time.Sleep(1 * time.Minute)
+		time.Sleep(1 * time.Second)
 		b.Current++
 		fmt.Printf("\033[2K\r%d minutes remaining", upperTimer-b.Current)
 	}
