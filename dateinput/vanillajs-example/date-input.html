@@ -15,9 +15,9 @@
       pattern="[0-9]*"
       placeholder="day placeholder"
       type='number'
-      />
-      <label for="date[month]"> Month Label </label>
-      <input
+    />
+    <label for="date[month]"> Month Label </label>
+    <input
       inputmode="numeric"
       id="month"
       max='12'
@@ -26,10 +26,12 @@
       pattern="[0-9]*"
       placeholder="month placeholder"
       type='number'
-      />
-      <label for="date[year]"> Year Label </label>
-      <input
+    />
+    <label for="date[year]"> Year Label </label>
+    <input
       name="date[year]"
+      min='1900'
+      max='2100'
       id="year"
       inputmode="numeric"
       pattern="[0-9]*"
@@ -40,20 +42,30 @@
 </body>
 <script type="text/javascript">
 
-  const handleArrowUp = (id, min, max) => {
-    const element = document.getElementById(id)
-    if (element.value === '31') {
-      element.value = '00'
+  const handleArrowUp = (element, min, max) => {
+    value = element.value
+    if (element.value === '') {
+      value = min
     }
-    element.value = formatValue(parseInt(element.value) + 1)
+    if (parseInt(value) >= max) {
+      value = formatValue(parseInt(min), element.id === 'year' ? 4 : 2)
+    } else {
+      value = formatValue(parseInt(value) + 1, element.id === 'year' ? 4 : 2)
+    }
+    element.value = value
   }
 
-  const handleArrowDown = (id, min, max) => {
-    const element = document.getElementById(id)
-    if (element.value === '01' || element.value === '1') {
-      element.value = '32'
+  const handleArrowDown = (element, min, max) => {
+    value = element.value
+    if (value === '') {
+      value = max
     }
-    element.value = formatValue(parseInt(element.value) - 1)
+    if (parseInt(value) <= min) {
+      value = formatValue(parseInt(max), element.id === 'year' ? 4 : 2)
+    } else {
+      value = formatValue(parseInt(value) - 1, element.id === 'year' ? 4 : 2)
+    }
+    element.value = value
 
   }
 
@@ -66,11 +78,10 @@
     return stringValue.padStart(digits, '0');
   }
 
-  const handleNumberInput = (number, id, min, max) => {
-    const element = document.getElementById(id)
-    let formattedValue = formatValue(parseInt(element.value + number), id === 'year' ? 4 : 2)
+  const handleNumberInput = (number, element, min, max) => {
+    const formattedValue = formatValue(parseInt(element.value + number), element.id === 'year' ? 4 : 2)
     element.value = marginBound(formattedValue, min, max)
-    if (id === 'day' && element.value > 3 || id === 'month' && element.value > 1) nextElement(id).focus();
+    if (element.id === 'day' && element.value > 3 || element.id === 'month' && element.value > 1) nextElement(element.id).focus();
   }
 
   const nextElement = (id) => {
@@ -92,71 +103,76 @@
     return value;
   }
 
-  const clear = (id) => {
-    const element = document.getElementById(id)
+  const clear = (element) => {
     element.value = ''
   }
 
+
+  const year = {
+    target: document.getElementById('year'),
+    upperBound: '2100',
+    lowerBound: '1900',
+  }
+
+  const month = {
+    target: document.getElementById('month'),
+    upperBound: '12',
+    lowerBound: '01',
+  }
+
+  const day = {
+    target: document.getElementById('day'),
+    upperBound: '31',
+    lowerBound: '01',
+  }
+
   document.addEventListener('DOMContentLoaded', () => {
-    document.getElementById('day').addEventListener('keydown', (keyEvent) => {
-      switch (keyEvent.key) {
+    [day, month, year].forEach(element => {
+      let { target, lowerBound, upperBound } = element;
+
+      target.addEventListener('keydown', (keyEvent) => {
+        switch (keyEvent.key) {
         case 'ArrowUp':
           keyEvent.preventDefault();
-          handleArrowUp('day', '01', '31');
+          handleArrowUp(target, lowerBound, upperBound);
           break;
-          case 'ArrowDown':
+        case 'ArrowDown':
           keyEvent.preventDefault();
-          handleArrowDown('day', '01', '31')
+          handleArrowDown(target, lowerBound, upperBound)
+          break;
+        case 'Backspace':
+          clear(target)
           break;
         default:
           keyEvent.preventDefault();
           if (isFinite(keyEvent.key)) {
-            handleNumberInput(keyEvent.key, 'day', 1, 31)
-          } else if (keyEvent.key === 'Backspace') {
-            clear('day')
+            if (target.id === 'year') {
+              lowerBound = '0000'
+              upperBound = '9999'
+            }
+            handleNumberInput(keyEvent.key, target, parseInt(lowerBound), parseInt(upperBound));
           }
           break;
       };
     });
-    document.getElementById('month').addEventListener('keydown', (keyEvent) => {
-      switch (keyEvent.key) {
-        case 'ArrowUp':
-          keyEvent.preventDefault();
-          handleArrowUp('month', '01', '12');
-          break;
-          case 'ArrowDown':
-          keyEvent.preventDefault();
-          handleArrowDown('month', '01', '12')
-          break;
-        default:
-          keyEvent.preventDefault();
-          if (isFinite(keyEvent.key)) {
-            handleNumberInput(keyEvent.key, 'month', 1, 12)
-          } else if (keyEvent.key === 'Backspace') {
-            clear('month')
-          }
-          break;
-      };
-    });
-    document.getElementById('year').addEventListener('keydown', (keyEvent) => {
-      switch (keyEvent.key) {
-        case 'ArrowUp':
-          keyEvent.preventDefault();
-          handleArrowUp('year', '1900', '2100');
-          break;
-          case 'ArrowDown':
-          keyEvent.preventDefault();
-          handleArrowDown('year', '1900 ', '2100')
-          break;
-        default:
-          keyEvent.preventDefault();
-          if (isFinite(keyEvent.key)) {
-            handleNumberInput(keyEvent.key, 'year', 0000, 9999)
-          } else if (keyEvent.key === 'Backspace') {
-            clear('year')
-          }
-          break;
+  });
+
+    const addErrorBackground = (element) => {
+      element.style.backgroundColor = '#ff0000'
+    };
+
+    year.target.addEventListener('blur', () => {
+      try {
+        if (new Date(`${year.value}-${month.value}-${day.value}`).getDate() !== parseInt(day.value)) {
+          [day, month, year].forEach(element => {
+            addErrorBackground(element)
+          })
+        }
+      } catch (e) {
+        [day, month, year].forEach(element => {
+          addErrorBackground(element.target)
+        })
       }
-    })
+    });
   })
 </script>
