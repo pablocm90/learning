@@ -25,3 +25,4 @@ func TestHelloEmpty(t *testing.T) {
 	}
 }
 Bonjour
+Re Bonjour
