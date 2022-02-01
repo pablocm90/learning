@@ -11,3 +11,5 @@ func main() {
 }
 
 Bonjour :) 
+
+Au revoir

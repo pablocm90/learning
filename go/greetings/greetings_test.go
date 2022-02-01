@@ -24,3 +24,5 @@ func TestHelloEmpty(t *testing.T) {
 		t.Fatalf(`Hello("") = %q, %v, want "", error`, msg, err)
 	}
 }
+Bonjour
+Re Bonjour
